@@ -147,7 +147,8 @@ class WaferFeature(GraycartFeature):
 
 class ProcessFeature(WaferFeature):
 
-    def __init__(self, graycart_wafer_feature, step, process_type, subpath, dfpk, peak_properties, dfpk3d=None):
+    def __init__(self, graycart_wafer_feature, step, process_type, subpath, dfpk, peak_properties,
+                 dfpk3d=None, zr_standoff=None):
         super().__init__(graycart_wafer_feature,
                          fid=graycart_wafer_feature.fid,
                          label=graycart_wafer_feature.label,
@@ -159,7 +160,8 @@ class ProcessFeature(WaferFeature):
                          feature_spacing=graycart_wafer_feature.feature_spacing,
                          target_radius=graycart_wafer_feature.target_radius,
                          target_depth=graycart_wafer_feature.target_depth,
-                         target_profile=graycart_wafer_feature.target_profile)
+                         target_profile=graycart_wafer_feature.target_profile,
+                         )
 
         self.step = step
         self.process_type = process_type
@@ -167,7 +169,13 @@ class ProcessFeature(WaferFeature):
 
         self.dfpk = dfpk
         self.peak_properties = peak_properties
-        self.z_standoff = self.calculate_z_standoff()
+
+        if zr_standoff is None:
+            self.z_standoff = self.calculate_z_standoff()
+            self.r_standoff = 0.0
+        else:
+            self.z_standoff = zr_standoff[0]
+            self.r_standoff = zr_standoff[1]
 
         self.dfpk3d = dfpk3d
 
@@ -272,34 +280,42 @@ class ProcessFeature(WaferFeature):
 
         return z_standoff
 
-    def calculate_exposure_dose_depth_relationship(self, z_standoff=-0.125):
+    def calculate_exposure_dose_depth_relationship(self):
         # inputs
+        z_standoff = self.z_standoff
+        r_standoff = self.r_standoff
         num_points = 2 ** 8  # 8-bit exposure resolution
 
         # datasets
         rdf = self.fold_dfpk.copy()  # 'exposure profile'
         dfe = self.dfe.copy()  # 'dose profile'
 
+        # 1. filter: get r < R + r_standoff (not always necessary, but sometimes)
+        rdf = rdf[rdf['r'].abs() < self.dr + r_standoff]
+
         # 2. perform rolling average to smooth (before filtering 'r' to reduce edge effects) (1 sample every 25 microns)
-        folded_sampling_rate = len(rdf) / rdf.r.max()
-        rolling_window = int(np.round(25 / folded_sampling_rate, 0))
+        # folded_sampling_rate = len(rdf) / rdf.r.max()
+        folded_sampling_resolution = rdf.r.max() / len(rdf)
+        rolling_window = int(np.round(20 / folded_sampling_resolution, 0))
         rdf = rdf.rolling(rolling_window, min_periods=1).mean()
 
-        # filter: get z < z_standoff because many values at zero exposure depth throws off curve_fit
-        rdf = rdf[rdf['z'] < self.z_standoff]  # NOTE: used to be 'z_standoff' as input (but this use-case was limited)
+        # 3. filter: get z only in "good" range for fitting
+        #       filter #1: z < z_standoff       (because many values at zero exposure depth throws off curve_fit)
+        #       filter #2: z > z.min() + 0.1    (because a flat bottom will also throw off curve_fit)
+        rdf = rdf[(rdf['z'] < z_standoff) & (rdf['z'] > rdf['z'].min() + 0.1)]
 
-        # maximum radial coordinates we can analyze (may depend on design or on profilometry data)
+        # 4a. maximum radial coordinates we can analyze (may depend on design or on profilometry data)
         radius_extent = np.min([rdf.r.max(), self.dr])
 
-        # 3. get r < outer radius of data
+        # 4b. get r < outer radius of data
         rdf = rdf[rdf['r'].abs() < radius_extent]
         dfe = dfe[dfe['r'] < radius_extent]
 
-        # 4. interpolate: (a) exposure profile; (b) dose profile
+        # 5. interpolate: (a) exposure profile; (b) dose profile
         ddf = process.downsample_dataframe(df=rdf, xcol='r', ycol='z', num_points=num_points, sampling_rate=None)
         ddfe = process.interpolate_dataframe(df=dfe, xcol='r', ycol='exposure_dose', num_points=num_points)
 
-        # 5. slice and recombine these profiles to create the exposure mapping function
+        # 6. slice and recombine these profiles to create the exposure mapping function
         dfmap_dose_to_depth = pd.DataFrame({'exposure_dose': ddfe.exposure_dose,
                                             'exposure_r': ddfe.r,
                                             'z': ddf.z,
@@ -307,11 +323,11 @@ class ProcessFeature(WaferFeature):
                                             }
                                            )
 
-        # 6. get functions limits
+        # 7. get functions limits
         depth_limits = [dfmap_dose_to_depth.z.min(), dfmap_dose_to_depth.z.max()]
         dose_limits = [dfmap_dose_to_depth.exposure_dose.min(), dfmap_dose_to_depth.exposure_dose.max()]
 
-        # 7. calculate mapping functions
+        # 8. calculate mapping functions
         dfmap_, dose_func, dose_popt = process.fit_func_dataframe(df=dfmap_dose_to_depth,
                                                                   xcol='z',
                                                                   ycol='exposure_dose',
@@ -361,16 +377,43 @@ class ProcessFeature(WaferFeature):
             # the 'amplitude' should be derived from our target feature depth and etch selectivity
             amplitude = target_depth / etch_selectivity_Si_to_PR  # equates to ~6 microns
 
+            # NOTE: this is a placeholder. This fork of data flow needs to be reviewed.
+            z_offset = -0.125
+
         else:
+            # Note: the following is used to redefine amplitude to fit
+            # within the maximum exposure depth of "the settings used
+            # for this particular feature." Although, this makes some
+            # practical sense, it is confusing for the user, who expects
+            # amplitude=A, but the function returns amplitude=<A.
+            # So, I'm going to skip it for now and maybe come back to it.
             # calculate amplitude of target exposure profile
             depth_range = self.exposure_func['depth_limits']
-            amplitude = np.max(depth_range) - np.min(depth_range)
+            amplitude_max = np.max(depth_range) - np.min(depth_range)
+            if amplitude > amplitude_max:
+                print("NOTE: amplitude {} > max exposure depth {}. "
+                      "Setting amplitude = max exposure depth.".format(amplitude, amplitude_max))
+                amplitude = amplitude_max
 
-        # z_offset is the z-distance we translate the target profile
-        z_offset = amplitude - thickness_PR + thickness_PR_budget_below
+                # z_offset is the z-distance we translate the target profile
+                # if max exposure depth < amplitude, then we set z_offset to
+                # a negligibly small non-zero value
+                # so that we pattern the grayscale pattern over largest possible
+                # depth of photoresist.
+                z_offset = -0.125
+
+            else:
+                # z_offset is the z-distance we translate the target profile
+                z_offset = amplitude - thickness_PR + thickness_PR_budget_below
+
+        if z_offset > 0:
+            raise ValueError("z_offset = {} > 0, but it should be < 0. Options to resolve are: \n"
+                             "(1) reduce amplitude, \n"
+                             "(2) increase PR thickness, \n"
+                             "(3) reduce thickness_PR_budge_below.")
 
         # resize target profile to fit new target
-        self.resize_target_profile(radius=self.target_radius, amplitude=amplitude)
+        self.resize_target_profile(radius=self.target_radius * 2, amplitude=amplitude)
         dft = self.dft
 
         # the target profile assumes z begins at z = 0, if we want some extra PR protection, we must add z_standoff

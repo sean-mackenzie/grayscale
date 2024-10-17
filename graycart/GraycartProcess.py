@@ -115,9 +115,10 @@ class GraycartProcess(object):
                                      width_rel_radius=0.01,
                                      peak_rel_height=0.95,
                                      fit_func='parabola',
-                                     prominence=1,
+                                     prominence=1.0,
                                      plot_width_rel_target=1.1,
-                                     thickness_pr=0,
+                                     thickness_pr=0.0,
+                                     zr_standoff=None,
                                      ):
         """
         Routine:
@@ -175,6 +176,7 @@ class GraycartProcess(object):
                                              subpath=self.subpath,
                                              dfpk=df,
                                              peak_properties=pk_details['peak_properties'],
+                                             zr_standoff=zr_standoff,
                                              ),
 
                       }

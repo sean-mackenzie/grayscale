@@ -2,6 +2,7 @@ from os.path import join
 import numpy as np
 
 from graycart.GraycartWafer import evaluate_wafer_flow
+from graycart.utils import plotting
 
 
 # ----------------------------------------------------------------------------------------------------------------------
@@ -49,9 +50,7 @@ SF6:
 # SHARED
 
 # target feature
-target_radius = 1920  # microns
 plot_width_rel_target_radius = 1.2  # plot radius = target_radius * plot_width_rel_target_radius
-target_depth_profile = 50
 
 # data processing
 evaluate_signal_processing = False  # True
@@ -80,219 +79,87 @@ Therefore, I need to:
 """
 
 # WAFER
-for wid in [21, 22, 23, 24, 25, 26, 27, 28]:
-    if wid in [20, 21, 22, 23, 24, 25, 26, 27, 28]:
+for wid in [3]:
+    if wid in [2]:
         # DESIGN
-        design_lbls = ['erf5']
-        target_lbls = ['erf5']
-        design_ids = [0]
-        design_spacing = 5e3
-        design_locs = [[0, n * design_spacing] for n in np.arange(-1, 2)]
+        design_lbls = ['linear_ramp_dR3um_dI4_Tol1e1__graycart']
+        target_lbls = ['linear_ramp_dR3um_dI4_Tol1e1__graycart']  # NOTE: must be preceded with "target-profile_"
 
         # field exposure matrix
-        dose_lbls = ['a', 'b', 'c']  # , 'c', 'd', 'e'
+        dose_lbls = ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j', 'k']
         focus_lbls = [1]
         fem_dxdy = [0e3, 0e3]
 
+        design_ids = [0]
+        design_spacing = 2.5e3
+        design_locs = [[0, n * design_spacing] for n in np.arange(-1, len(dose_lbls))]
+
         # data processing
-        if wid == 20:
-            perform_rolling_on = [[4, 'a1', 25], [4, 'c1', 25]]
-        else:
-            perform_rolling_on = False
-        features_of_interest = ['a1', 'b1', 'c1']
-        target_radius = 2050  # microns
-        target_depth_profile = 50
+        # perform_rolling_on = [[4, 'a1', 25], [4, 'c1', 25]]
+        perform_rolling_on = False
+        features_of_interest = ['a1', 'c1', 'e1', 'h1', 'i1', 'k1']
+        target_radius = 1560 / 2  # microns
+        target_depth_profile = 150
 
-    elif wid < 20:
+        # ---
 
-        if wid == 19:
-            # DESIGN
-            design_lbls = ['erf5']
-            target_lbls = ['erf5']
-            design_ids = [0]
-            design_spacing = 5e3
-            design_locs = [[0, n * design_spacing] for n in np.arange(-1, 2)]
+        # target feature
+        plot_width_rel_target_radius = 1.075  # plot radius = target_radius * plot_width_rel_target_radius
 
-            # field exposure matrix
-            dose_lbls = ['a', 'b', 'c']  # , 'c', 'd', 'e'
-            focus_lbls = [1]
-            fem_dxdy = [0e3, 0e3]
+        # data processing
+        evaluate_signal_processing = False  # True
+        lambda_peak_rel_height = lambda x: min([0.95 + x / 100, 0.9875])
+        r_standoff_measure = -25  # units: microns
+        z_standoff_measure = -0.125  # units: microns
+        z_standoff_design = 0  # if "-1", calculate the z_standoff from the measured exposure profile
 
-            # data processing
-            perform_rolling_on = False  # [[3, 'b1', 25]]
-            features_of_interest = ['a1', 'b1', 'c1']
-            target_radius = 2050  # microns
-            target_depth_profile = 45
+        thickness_PR = 8.125
+        thickness_PR_budget = 0.5
+        thickness_PR_budget_below = 0.75  # 0.5  # NOTE: this value affects many of the plots and is highly subjective.
+        amplitude = 7  # amplitude of profile in photoresist (not including thickness below and above)
 
-        elif wid == 18:
-            # DESIGN
-            design_lbls = ['erf5']
-            target_lbls = ['erf5']
-            design_ids = [0]
-            design_spacing = 5e3
-            design_locs = [[0, n * design_spacing] for n in np.arange(-1, 2)]
+    elif wid in [3]:
+        # DESIGN
+        design_lbls = ['erf_dia2mm_x01.25_32lyrs_7.5umDepth_Tol1e1_dose800mJ']
+        target_lbls = ['erf_dia2mm_x01.25_32lyrs_7.5umDepth_Tol1e1_dose800mJ']
 
-            # field exposure matrix
-            dose_lbls = ['a', 'b', 'c']  # , 'c', 'd', 'e'
-            focus_lbls = [1]
-            fem_dxdy = [0e3, 0e3]
+        # field exposure matrix
+        dose_lbls = ['a', 'b', 'c', 'd']
+        focus_lbls = [1, 2, 3]
+        fem_dxdy = [3.5e3, 3.5e3]
 
-            # data processing
-            perform_rolling_on = False  # [[3, 'b1', 25]]
-            features_of_interest = ['a1', 'b1', 'c1']
-            target_radius = 2050  # microns
+        design_ids = [0]
+        design_spacing = 3.5e3
+        design_locs = [[0, n * design_spacing] for n in np.arange(-1, len(dose_lbls))]
 
-        elif wid == 17:
-            # DESIGN
-            design_lbls = ['erf5_LrO']
-            target_lbls = ['erf5_LrO']
-            design_ids = [0]
-            design_spacing = 5e3
-            design_locs = [[0, n * design_spacing] for n in np.arange(-2, 3)]
+        # data processing
+        # perform_rolling_on = [[4, 'a1', 25], [4, 'c1', 25]]
+        perform_rolling_on = False
+        features_of_interest = ['a1', 'b1', 'c1', 'd1']
+        target_radius = 1000  # microns
+        target_depth_profile = 150
 
-            # field exposure matrix
-            dose_lbls = ['a', 'b', 'c', 'd', 'e']  # , 'c', 'd', 'e'
-            focus_lbls = [1]
-            fem_dxdy = [0e3, 0e3]
+        # target feature
+        plot_width_rel_target_radius = 1.075  # plot radius = target_radius * plot_width_rel_target_radius
 
-            # data processing
-            perform_rolling_on = False  # [[3, 'b1', 25]]  # False
-            features_of_interest = ['d1']  # ['b1', 'b2', 'c1', 'c2', 'd1', 'd2']
-            lambda_peak_rel_height = lambda x: min([0.95 + x / 100, 0.9875])
-            target_radius = 2100  # microns
-            plot_width_rel_target_radius = 1.25  # plot radius = target_radius * plot_width_rel_target_radius
+        # data processing
+        evaluate_signal_processing = False  # True
+        lambda_peak_rel_height = lambda x: min([0.95 + x / 100, 0.9875])
+        r_standoff_measure = -25  # units: microns
+        z_standoff_measure = -0.125  # units: microns
+        z_standoff_design = 0  # if "-1", calculate the z_standoff from the measured exposure profile
 
-        elif wid == 16:
-            # DESIGN
-            design_lbls = ['erf5_LrO']
-            target_lbls = ['erf5_LrO']
-            design_ids = [0]
-            design_spacing = 5e3
-            design_locs = [[0, n * design_spacing] for n in np.arange(-2, 3)]
-
-            # field exposure matrix
-            dose_lbls = ['a', 'b', 'c']  # , 'c', 'd', 'e'
-            focus_lbls = [1]
-            fem_dxdy = [0e3, 0e3]
-
-            # data processing
-            perform_rolling_on = False  # [[3, 'b1', 25]]  # False
-            features_of_interest = ['a1', 'b1', 'c1']  # ['b1', 'b2', 'c1', 'c2', 'd1', 'd2']
-
-            # misc
-            thickness_PR_budget = 1.65
-
-        elif wid == 15:
-            # DESIGN
-            design_lbls = ['erf5_LrO']
-            target_lbls = ['erf5_LrO']
-            design_ids = [0]
-            design_spacing = 5e3
-            design_locs = [[0, n * design_spacing] for n in np.arange(-2, 3)]
-
-            # field exposure matrix
-            dose_lbls = ['c']  # , 'c', 'd', 'e'
-            focus_lbls = [1, 2]
-            fem_dxdy = [25e3, 0e3]
-
-            # data processing
-            perform_rolling_on = False  # [[3, 'b1', 25]]  # False
-            features_of_interest = ['c1', 'c2']  # ['b1', 'b2', 'c1', 'c2', 'd1', 'd2']
-
-        elif wid == 14:
-            # DESIGN
-            design_lbls = ['erf5_LrO']
-            target_lbls = ['erf5_LrO']
-            design_ids = [0]
-            design_spacing = 5e3
-            design_locs = [[0, n * design_spacing] for n in np.arange(-2, 3)]
-
-            # field exposure matrix
-            dose_lbls = ['a', 'b']  # , 'c', 'd', 'e'
-            focus_lbls = [1]
-            fem_dxdy = [0e3, 35e3]
-
-            # data processing
-            perform_rolling_on = [[3, 'b1', 25]]  # False
-            features_of_interest = ['a1', 'b1']  # ['b1', 'b2', 'c1', 'c2', 'd1', 'd2']
-
-        elif wid == 13:
-            # DESIGN
-            design_lbls = ['erf5_LrO']
-            target_lbls = ['erf5_LrO']
-            design_ids = [0]
-            design_spacing = 5e3
-            design_locs = [[0, n * design_spacing] for n in np.arange(-2, 3)]
-
-            # field exposure matrix
-            dose_lbls = ['a', 'b', 'c', 'd', 'e']  # , 'c', 'd', 'e'
-            focus_lbls = [1, 2]
-            fem_dxdy = [5e3, 5e3]
-
-            # data processing
-            perform_rolling_on = False  # [[3, 'b1', 25]]  # False
-            features_of_interest = ['c1', 'c2']
-
-        elif wid == 12:
-            # DESIGN
-            design_lbls = ['erf5_LrO']
-            target_lbls = ['erf5_LrO']
-            design_ids = [0]
-            design_spacing = 5e3
-            design_locs = [[0, n * design_spacing] for n in np.arange(-2, 3)]
-
-            # field exposure matrix
-            dose_lbls = ['a', 'b', 'c', 'd', 'e']
-            focus_lbls = [1, 2, 3]
-            dose, dose_step = 350, 0
-            focus, focus_step = -25, 25
-            fem_dxdy = [15e3, 5e3]
-
-            # data processing
-            perform_rolling_on = [[3, 'c1', 25], [3, 'c2', 15], [3, 'c3', 15]]
-            features_of_interest = ['c{}'.format(i + 1) for i in range(3)]
-
-        elif wid == 11:
-            # DESIGN
-            design_lbls = ['erf3', 'Lr']
-            target_lbls = [None, None]
-            design_ids = [0, 1]
-            design_spacing = 5e3
-            design_locs = [[0, n * design_spacing] for n in [-0.5, 0.5]]
-
-            # field exposure matrix
-            dose_lbls = ['a', 'b']  # 'a', 'b', 'c', 'd', 'e'
-            focus_lbls = [1]
-            fem_dxdy = [10e3, 10e3]
-
-            # data processing
-            perform_rolling_on = False  # [[3, 'b1', 25]]  # False
-            features_of_interest = ['a1_erf3', 'b1_erf3', 'a1_Lr', 'b1_Lr']  # ['b1', 'b2', 'c1', 'c2', 'd1', 'd2']
-
-        elif wid == 10:
-            # design
-            design_lbls = ['erf3', 'Lr']
-            target_lbls = [None, None]
-            design_ids = [0, 1]
-            design_spacing = 5e3
-            design_locs = [[0, n * design_spacing] for n in [-0.5, 0.5]]
-
-            # field exposure matrix
-            dose_lbls = ['a', 'b']  # 'a', 'b', 'c', 'd', 'e'
-            focus_lbls = [1]
-            fem_dxdy = [10e3, 10e3]
-
-            # data processing
-            perform_rolling_on = [[3, 'b1_erf3', 50]]  # False
-            features_of_interest = ['a1_erf3', 'b1_erf3', 'a1_Lr', 'b1_Lr']  # ['b1', 'b2', 'c1', 'c2', 'd1', 'd2']
+        thickness_PR = 8.125
+        thickness_PR_budget = 0.5
+        thickness_PR_budget_below = 0.75  # 0.5  # NOTE: this value affects many of the plots and is highly subjective.
+        amplitude = 7  # amplitude of profile in photoresist (not including thickness below and above)
 
     else:
-        continue
-        # raise ValueError()
+        raise ValueError()
 
     # SHARED
 
-    base_path = '/Users/mackenzie/Desktop/Zipper/Fabrication/Wafer{}'.format(wid)
+    base_path = '/Users/mackenzie/Desktop/zipper_paper/Fabrication/grayscale/w{}'.format(wid)
     fn_pflow = 'process-flow_w{}.xlsx'.format(wid)
     path_results = 'results'
     profilometry_tool = 'KLATencor-P7'
@@ -304,6 +171,7 @@ for wid in [21, 22, 23, 24, 25, 26, 27, 28]:
 
     # ------------------------------------------------------------------------------------------------------------------
 
+    # 1. instantiate grayscale class objects and read profilometry data
     wfr = evaluate_wafer_flow(wid, base_path, fn_pflow, path_results, profilometry_tool,
                               design_lbls, target_lbls, design_locs, design_ids,
                               design_spacing, dose_lbls, focus_lbls, fem_dxdy,
@@ -313,16 +181,55 @@ for wid in [21, 22, 23, 24, 25, 26, 27, 28]:
                               save_all_results=save_all_results,
                               perform_rolling_on=perform_rolling_on,
                               evaluate_signal_processing=evaluate_signal_processing,
+                              zr_standoff=[z_standoff_measure, r_standoff_measure],
                               )
+
+    # 2. relate mask design (intensity profile) to actual outcome (surface profile)
+    wfr.characterize_exposure_dose_depth_relationship(plot_figs=save_all_results,
+                                                      save_type=save_type,
+                                                      )
+
+    # 3. merge features
+    wfr.merge_exposure_doses_to_process_depths(export=save_all_results)
+    wfr.plot_all_exposure_dose_to_depth(step=step_develop)
+    wfr.compare_exposure_functions()
+
+    # 4. use intensity+surface profiles to generate LUT, redraw intensity profile using new LUT
+    wfr.correct_grayscale_design_profile(amplitude=amplitude,  # None --> auto-calculate based on etch selectivity
+                                         target_depth=target_depth_profile,
+                                         thickness_PR=thickness_PR,
+                                         thickness_PR_budget_below=thickness_PR_budget_below,
+                                         plot_figs=save_all_results,
+                                         save_type=save_type,
+                                         )
+
+    # plots
+    if save_all_results:
+        wfr.plot_feature_evolution(px='r', py='z', save_fig=save_all_results)
+
+        # plot exposure profile
+        for foi in features_of_interest:
+            gpf = wfr.features[foi]
+            plotting.plot_exposure_profile(gcf=gpf, path_save=join(wfr.path_results, 'figs'), save_type=save_type)
+
+        # plot feature profile overlaid with exposure profile
+        step = max(wfr.list_steps)
+        for did in wfr.dids:
+            plotting.plot_overlay_feature_and_exposure_profiles(gcw=wfr,
+                                                                step=step,
+                                                                did=did,
+                                                                path_save=join(wfr.path_results, 'figs'),
+                                                                save_type=save_type,
+                                                                )
+
+    # ---
 
     # grade target accuracy
     # final_profile_depth = wfr.processes[max(wfr.list_steps)].features['a1'].peak_properties['peak_heights']
     # TODO: grade profile accuracy against: (1) target depth, and (ii) actual depth (i.e., depth-normalized profile).
-    wfr.grade_profile_accuracy(step=max(wfr.list_steps), target_radius=target_radius, target_depth=target_depth_profile)
+    # wfr.grade_profile_accuracy(step=max(wfr.list_steps), target_radius=target_radius, target_depth=target_depth_profile)
 
-    wfr.plot_profile_3d(step=max(wfr.list_steps))
-
-    continue
+    # wfr.plot_profile_3d(step=max(wfr.list_steps))
 
     wfr.backout_process_to_achieve_target(target_radius=target_radius,
                                           target_depth=target_depth_profile,
@@ -338,43 +245,5 @@ for wid in [21, 22, 23, 24, 25, 26, 27, 28]:
                                             etch_recipe_PR=etch_recipe_PR, etch_recipe_Si=etch_recipe_Si,
                                             save_fig=save_all_results,
                                             )
-
-    wfr.characterize_exposure_dose_depth_relationship(z_standoff=z_standoff_measure,
-                                                      plot_figs=save_all_results,
-                                                      save_type=save_type,
-                                                      )
-
-    wfr.merge_exposure_doses_to_process_depths(export=save_all_results)
-    wfr.plot_all_exposure_dose_to_depth(step=step_develop)
-    wfr.compare_exposure_functions()
-    wfr.correct_grayscale_design_profile(amplitude=None,  # None --> auto-calculate based on etch selectivity
-                                         target_depth=target_depth_profile,
-                                         thickness_PR=thickness_PR,
-                                         thickness_PR_budget_below=thickness_PR_budget_below,
-                                         plot_figs=save_all_results,
-                                         save_type=save_type,
-                                         )
-
-    # ---
-    # ---
-
-    # plots
-    if save_all_results:
-        wfr.plot_feature_evolution(px='r', py='z', save_fig=save_all_results)
-
-        # plot exposure profile
-        for foi in features_of_interest:
-            gpf = wfr.features[foi]
-            plotting.plot_exposure_profile(gcf=gpf, path_save=join(wfr.path_results, 'figs'), save_type=save_type)
-
-        # plot feature profile overlaid with exposure profile
-        step = max(wfr.list_steps)
-        for did in wfr.dids:
-            plotting.plot_overlay_feature_and_exposure_profiles(gcw=wfr, step=step, did=did,
-                                                                path_save=join(wfr.path_results, 'figs'),
-                                                                save_type=save_type,
-                                                                )
-
-    # ---
 
     print("test_flow.py completed without errors.")

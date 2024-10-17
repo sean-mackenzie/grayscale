@@ -156,6 +156,7 @@ class GraycartWafer(object):
                                       fit_func='parabola',
                                       prominence=1,
                                       plot_width_rel_target=1.1,
+                                      zr_standoff=None,
                                       ):
         """
         For each process:
@@ -203,6 +204,7 @@ class GraycartWafer(object):
                                                            prominence=prominence,
                                                            plot_width_rel_target=plot_width_rel_target,
                                                            thickness_pr=pr_thickness,
+                                                           zr_standoff=zr_standoff,
                                                            )
 
                 if plot_fits:
@@ -256,7 +258,7 @@ class GraycartWafer(object):
                          index=False,
                          )
 
-    def characterize_exposure_dose_depth_relationship(self, z_standoff=-0.125, process_type=None, steps=None,
+    def characterize_exposure_dose_depth_relationship(self, process_type=None, steps=None,
                                                       plot_figs=False, save_type='.png'):
 
         if process_type is None:
@@ -273,7 +275,7 @@ class GraycartWafer(object):
                 for flbl, gcf in gcp.features.items():
                     if isinstance(gcf, ProcessFeature):
 
-                        gcf.calculate_exposure_dose_depth_relationship(z_standoff=z_standoff)
+                        gcf.calculate_exposure_dose_depth_relationship()
 
                         if plot_figs:
                             plotting.plot_exposure_dose_depth_relationship(gcf,
@@ -293,10 +295,10 @@ class GraycartWafer(object):
         """
         If amplitude (depth of PR feature) is None, then amplitude will be calculated from 'target_depth' and etch
         rate selectivity of Si:PR (right now, hard-coded as SF6+O2.V5)
-        :param amplitude:
-        :param target_depth:
-        :param thickness_PR:
-        :param thickness_PR_budget_below:
+        :param amplitude: the height of the profile you want to encode into photoresist (not including top/bot standoff). Note, if amplitude > max_exposure_depth, then amplitude is set equal to max_exposure_depth.
+        :param target_depth: the depth of the silicon profile, after etching and strip
+        :param thickness_PR: the thickness of the photoresist (i.e., pre-exposure)
+        :param thickness_PR_budget_below: the thickness of photoresist between substrate and bottom of exposed profile.
         :param process_type:
         :param steps:
         :param plot_figs:
@@ -327,6 +329,7 @@ class GraycartWafer(object):
                             plotting.plot_exposure_profile_and_design_layers(gcf,
                                                                              path_save=join(self.path_results, 'figs'),
                                                                              save_type=save_type,
+                                                                             thickness_PR=thickness_PR,
                                                                              )
 
     def grade_profile_accuracy(self, step, target_radius, target_depth):
@@ -512,6 +515,7 @@ def evaluate_wafer_flow(wid, base_path, fn_pflow, path_results, profilometry_too
                         save_all_results=False,
                         perform_rolling_on=False,
                         evaluate_signal_processing=False,
+                        zr_standoff=None,
                         ):
     # ------------------------------------------------------------------------------------------------------------------
     # SET UP THE DATA HIERARCHY
@@ -558,6 +562,7 @@ def evaluate_wafer_flow(wid, base_path, fn_pflow, path_results, profilometry_too
                                       width_rel_radius=0.01,
                                       fit_func='parabola',
                                       prominence=1,
+                                      zr_standoff=zr_standoff,
                                       )
     wfr.merge_processes_profilometry(export=save_all_results)
 

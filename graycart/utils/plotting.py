@@ -910,23 +910,29 @@ def plot_exposure_profile(gcf, path_save=None, save_type='.png'):
     plt.close()
 
 
-def plot_exposure_profile_and_design_layers(gpf, path_save=None, save_type='.png'):
+def plot_exposure_profile_and_design_layers(gpf, path_save=None, save_type='.png',
+                                            thickness_PR=None):
     # plot
-    fig, ax = plt.subplots(figsize=(size_x_inches * 1.125, size_y_inches))
+    fig, ax = plt.subplots(figsize=(size_x_inches * 1.25, size_y_inches * 1.0625))
 
     ax.plot(gpf.dft.r, gpf.dft.z, color='k', label='Target')
     ax.plot(gpf.fold_dfpk.r, gpf.fold_dfpk.z, 'o', ms=0.5, color='gray', alpha=0.25, label='Measured')
     ax.set_xlabel(r'$r \: (\mu m)$')
     ax.set_ylabel(r'$z \: (\mu m)$')
-    # ax.set_ylim(top=0, bottom=int(np.floor(gpf.dft.z.min())))
-    ax.legend(loc='center left', title='Profile')
+
+    if thickness_PR is not None:
+        ax.axhline(-thickness_PR, linestyle='--', color='gray', linewidth=0.5, label='Substrate')
+        ax.set_ylim(top=0.25, bottom=-thickness_PR -0.25)
+    ax.legend(loc='lower left', title='Profile', bbox_to_anchor=(0, 1.01), ncols=3,
+              fontsize='small', title_fontsize='small', handlelength=1.0, handletextpad=0.3, columnspacing=0.75)
 
     axr = ax.twinx()
     axr.plot(gpf.dfd.r, gpf.dfd.l, linewidth=0.75, color='b', label='Original')
     axr.plot(gpf.dft.r, gpf.dft.l, linewidth=0.75, color='r', label='Corrected')
     axr.set_ylabel('Layer', color='r')
-    # axr.set_ylim(top=256, bottom=0)
-    axr.legend(loc='center right', title='Grayscale Mask')
+    axr.set_ylim(top=265, bottom=-10)
+    axr.legend(loc='lower right', title='Grayscale Mask',  bbox_to_anchor=(1, 1.01), ncols=3,
+               fontsize='small', title_fontsize='small', handlelength=1.0, handletextpad=0.3, columnspacing=0.75)
 
     plt.tight_layout()
     if path_save is not None:
@@ -942,15 +948,15 @@ def plot_exposure_profile_and_design_layers(gpf, path_save=None, save_type='.png
 def plot_overlay_feature_and_exposure_profiles(gcw, step, did, path_save=None, save_type='.png'):
     gcp = gcw.processes[step]
 
-    fig, ax = plt.subplots(figsize=(size_x_inches * 1.5, size_y_inches * 0.75))
+    fig, ax = plt.subplots(figsize=(size_x_inches * 1.5, size_y_inches))
     axr = ax.twinx()
 
     exposure_doses = []
     for gcf in gcp.features.values():
         if isinstance(gcf, ProcessFeature):
             if gcf.did == did:
-                ax.plot(gcf.dfpk.r, gcf.dfpk.z, label='({}, {})'.format(gcf.dose, gcf.focus))
-                axr.plot(gcf.mdfe.r, gcf.mdfe.exposure_dose, linestyle='--', color='r')
+                p1, = ax.plot(gcf.dfpk.r, gcf.dfpk.z, label='({}, {})'.format(gcf.dose, gcf.focus))
+                axr.plot(gcf.mdfe.r, gcf.mdfe.exposure_dose, linestyle='--', color=p1.get_color())
                 exposure_doses.append(gcf.dose)
 
     ax.set_xlabel(r'$r \: (\mu m)$')
