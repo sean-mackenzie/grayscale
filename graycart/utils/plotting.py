@@ -145,7 +145,10 @@ def plot_features_by_process(gcw, px, py, did=None, normalize=False, save_fig=Fa
                 # ax.plot(dfds[px], dfds[py], linewidth=0.5, label="({}, {}, {})".format(design_id, dose, focus))
                 ax.set_ylabel(r'$z \: (\mu m)$')
 
-            ax.legend(loc='upper left', bbox_to_anchor=(1, 1.1), title=r'$(d_{ID}, I_{o}, f)$')
+            if len(fids) > 8:
+                ax.legend(loc='upper left', bbox_to_anchor=(1, 1.1), title=r'$(d_{ID}, I_{o}, f)$', fontsize='x-small')
+            else:
+                ax.legend(loc='upper left', bbox_to_anchor=(1, 1.1), title=r'$(d_{ID}, I_{o}, f)$', fontsize='small')
             ax.set_title(gcw.processes[step].descriptor)
 
     axs[-1].set_xlabel(r'$r \: (\mu m)$')
@@ -552,7 +555,7 @@ def compare_target_to_features_by_process(gcw, px, py, did=None, normalize=False
     plt.close()
 
 
-def estimated_target_profiles(gcw, px, py, etch_recipe_PR, etch_recipe_Si,
+def estimated_target_profiles(gcw, px, py, etch_recipe_PR, etch_recipe_Si, target_depth, thickness_PR_budget,
                               include_target=True, save_fig=False, save_type='.png'):
     # get dataframe
     df = gcw.dfps
@@ -617,8 +620,8 @@ def estimated_target_profiles(gcw, px, py, etch_recipe_PR, etch_recipe_Si,
                                                                               p_materials,
                                                                               recipe_smOOth=etch_recipe_PR,
                                                                               recipe_SF6_O2=etch_recipe_Si,
-                                                                              target_depth=50,
-                                                                              thickness_PR_budget=1.95,
+                                                                              target_depth=target_depth,
+                                                                              thickness_PR_budget=thickness_PR_budget,
                                                                               r_target=5,
                                                                               )
 

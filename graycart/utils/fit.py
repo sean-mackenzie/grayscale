@@ -88,6 +88,12 @@ def fit_single_peak(df, peak_properties, peak_properties_idx, width_space, fit_f
     popt, pcov = curve_fit(fit_func, xf, zf)
     xf_pk_idx = np.argmax(fit_func(xf, *popt))
 
+    # calculate path length of profile
+    xpath = df.x.iloc[il:ir].diff().to_numpy()
+    zpath = df.z.iloc[il:ir].diff().to_numpy()
+    differential_path = np.sqrt(xpath ** 2 + zpath ** 2)
+    total_path_length = np.sum(differential_path[1:])
+
     # compute fit function
     res_x = np.linspace(xf.min(), xf.max(), 50)
     res_z = fit_func(res_x, *popt)
@@ -98,7 +104,7 @@ def fit_single_peak(df, peak_properties, peak_properties_idx, width_space, fit_f
     pk_height = df.z.iloc[pk_idx]
     pk_radius = (df.x.iloc[ir] - df.x.iloc[il]) / 2
 
-    fit_properties = {'width_space': width_space,  # arbitrary padding outside of 'left_ips' and 'right_ips'
+    fit_properties = {'width_space': width_space,  # arbitrary padding outside 'left_ips' and 'right_ips'
                       'il': il,  # index value: left_ips - width_space
                       'ir': ir,  # index value: right_ips + width_space
                       'fit_x': xf,  # index array (0, 1, 2, 3,...) from 'il' to 'ir'
@@ -112,6 +118,8 @@ def fit_single_peak(df, peak_properties, peak_properties_idx, width_space, fit_f
                       'pk_xc': np.round(pk_xc, 1),  # x-coordinate @ peak in original dataframe
                       'pk_h': np.round(pk_height, 2),  # z-coordinate @ peak in original dataframe
                       'pk_r': int(np.round(pk_radius, -1)),  # x-span in original dataframe, from 'il' to 'ir'
+                      'pk_angle': np.rad2deg(np.arctan(pk_height / pk_radius)),
+                      'path_length': total_path_length,
                       }
 
     peak_properties.update(fit_properties)

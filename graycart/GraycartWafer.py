@@ -47,6 +47,7 @@ class GraycartWafer(object):
 
         # initialize variables
         self.dfps = None
+        self.df_feature_geometry = None
 
     # ------------------------------------------------------------------------------------------------------------------
     # DATA INPUT FUNCTIONS
@@ -166,7 +167,7 @@ class GraycartWafer(object):
             * plot all profiles on the same figure for comparison
         """
 
-        for step, gcprocess in self.processes.items():
+        for step, gcprocess in self.processes.items():  # for step, gcprocess in zip([6], [self.processes[6]]):
             if gcprocess.ppath is not None:
                 if isinstance(peak_rel_height, float):
                     pass
@@ -180,7 +181,7 @@ class GraycartWafer(object):
                 else:
                     pr_thickness = 0
 
-                if gcprocess.process_type == 'Strip':
+                if gcprocess.process_type == 'Stripp':
                     gcprocess.add_3d_profilometry_to_features(plot_fits=plot_fits,
                                                               perform_rolling_on=perform_rolling_on,
                                                               evaluate_signal_processing=evaluate_signal_processing,
@@ -233,6 +234,40 @@ class GraycartWafer(object):
                               self.measurement_methods['Profilometry']['filetype_write']),
                          index=False,
                          )
+
+    def export_feature_geometry(self):
+        data = []
+        for i, graycart_process in self.processes.items():
+            for f_lbl, pf in graycart_process.features.items():
+                if not isinstance(pf, (ProcessFeature, SiliconFeature)):
+                    continue
+                data.append([i, f_lbl, pf.peak_properties['pk_r'], pf.peak_properties['pk_h'],
+                             pf.peak_properties['pk_angle'], pf.peak_properties['path_length']])
+        df = pd.DataFrame(np.array(data), columns=['step', 'flbl', 'pk_r', 'pk_h', 'pk_angle', 'path_length'])
+        df = df.astype({'step': int, 'flbl': str, 'pk_r': float, 'pk_h': float, 'pk_angle': float, 'path_length': float})
+        df['length/diameter'] = df['path_length'] / (df['pk_r'] * 2)
+        df = df.sort_values('step', ascending=False)
+        df.to_excel(join(self.path, 'results', 'w{}_merged_feature_geometries.xlsx'.format(self._wid)),
+                    index=False)
+        self.df_feature_geometry = df
+
+    def export_membrane_deformation_characteristics(self, membrane_thickness):
+        df = self.df_feature_geometry.copy()
+        df = df[df['step'] == df['step'].max()]
+        df['D'] = df['pk_r'] * 2
+        df['L'] = df['path_length']
+        df['t'] = membrane_thickness
+        df['w_o'] = df['pk_h'].abs()
+        df['theta'] = df['pk_angle'].abs()
+        df['t/D'] = df['t'] / df['D']
+        df['w_o/D'] = df['w_o'] / df['D']
+        df['w_o/t'] = df['w_o'] / df['t']
+        df['L/D'] = df['L'] / df['D']
+
+        df = df[['step', 'flbl', 'D', 'L', 't', 'w_o', 'theta', 't/D', 'w_o/D', 'w_o/t', 'L/D']]
+        df = df.round({'L': 0, 'w_o': 1, 'theta': 1, 't/D': 3, 'w_o/D': 3, 'w_o/t': 1, 'L/D': 3})
+        df.to_excel(join(self.path, 'results', 'w{}_membrane_deformation_characteristics.xlsx'.format(self._wid)),
+                    index=False)
 
     def merge_exposure_doses_to_process_depths(self, export=False):
         dfs = []
@@ -343,7 +378,7 @@ class GraycartWafer(object):
                             gcf.volume, gcf.target_volume_error])
 
                 plotting.plot_profile_to_target_error(gcf, path_save=join(self.path_results, 'figs'), save_type='.png')
-
+                print("plotted")
                 # gcf.correlate_profile_to_target()
 
         res = pd.DataFrame(np.array(res), columns=['fid', 'rmse', 'rmse_percent_depth', 'r_sq', 'vol', 'err_vol'])
@@ -366,8 +401,12 @@ class GraycartWafer(object):
                                                  path_save=join(self.path_results, 'figs',
                                                                 'merged_dose-depths_step{}'.format(step) + save_type))
 
-    def plot_feature_evolution(self, px='r', py='z', save_fig=True):
-        dids = self.dids
+    def plot_feature_evolution(self, px='r', py='z', save_fig=True, dids_of_interest=None):
+        if dids_of_interest is None:
+            dids = self.dids
+        else:
+            dids = dids_of_interest
+
         if len(dids) > 1:
             dids.append(None)
 
@@ -386,20 +425,23 @@ class GraycartWafer(object):
                 self.plot_processes_by_feature(px=px, py=py, did=did, normalize=norm, save_fig=save_fig,
                                                save_type='.png')
 
-    def compare_target_to_feature_evolution(self, px, py, etch_recipe_PR, etch_recipe_Si, save_fig=True):
+    def compare_target_to_feature_evolution(self, px, py, etch_recipe_PR, etch_recipe_Si, target_depth,
+                                            thickness_PR_budget, save_fig=True):
         dids = self.dids
         if len(dids) > 1:
             dids.append(None)
 
         if etch_recipe_Si == 'sweep':
-            etch_recipe_Sis = ['SF6+O2.V5', 'SF6+O2.V6', 'SF6+O2.V10', 'SF6+O2.V11', 'SF6+O2.V12', 'SF6+O2.V13']
+            etch_recipe_Sis = ['SF6+O2.V6', 'SF6+O2.S25']#, 'SF6+O2.S30', 'SF6+O2.S40', 'SF6+O2.S50']
             for etch_recipe_Si in etch_recipe_Sis:
                 self.estimated_target_profiles(px, py='z_surf',
                                                etch_recipe_PR=etch_recipe_PR, etch_recipe_Si=etch_recipe_Si,
+                                               target_depth=target_depth, thickness_PR_budget=thickness_PR_budget,
                                                include_target=True, save_fig=save_fig, save_type='.png')
         elif etch_recipe_Si is not None:
             self.estimated_target_profiles(px, py='z_surf',
                                            etch_recipe_PR=etch_recipe_PR, etch_recipe_Si=etch_recipe_Si,
+                                           target_depth=target_depth, thickness_PR_budget=thickness_PR_budget,
                                            include_target=True, save_fig=save_fig, save_type='.png')
         else:
             pass
@@ -446,10 +488,10 @@ class GraycartWafer(object):
         plotting.compare_target_to_features_by_process(self, px, py, did=did, normalize=normalize, save_fig=save_fig,
                                                        save_type=save_type)
 
-    def estimated_target_profiles(self, px, py, etch_recipe_PR, etch_recipe_Si, include_target=True, save_fig=False,
-                                  save_type='.png'):
-        plotting.estimated_target_profiles(self, px, py, etch_recipe_PR, etch_recipe_Si, include_target, save_fig,
-                                           save_type)
+    def estimated_target_profiles(self, px, py, etch_recipe_PR, etch_recipe_Si, target_depth, thickness_PR_budget,
+                                include_target=True, save_fig=False, save_type='.png'):
+        plotting.estimated_target_profiles(self, px, py, etch_recipe_PR, etch_recipe_Si, target_depth,
+                                           thickness_PR_budget, include_target, save_fig, save_type)
 
     # ------------------------------------------------------------------------------------------------------------------
     # UTILITY FUNCTIONS
@@ -565,5 +607,6 @@ def evaluate_wafer_flow(wid, base_path, fn_pflow, path_results, profilometry_too
                                       zr_standoff=zr_standoff,
                                       )
     wfr.merge_processes_profilometry(export=save_all_results)
+    wfr.export_feature_geometry()
 
     return wfr

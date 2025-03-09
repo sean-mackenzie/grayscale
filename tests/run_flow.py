@@ -79,7 +79,9 @@ Therefore, I need to:
 """
 
 # WAFER
-for wid in [3]:
+wids = [14]
+
+for wid in wids:
     if wid in [2]:
         # DESIGN
         design_lbls = ['linear_ramp_dR3um_dI4_Tol1e1__graycart']
@@ -118,18 +120,87 @@ for wid in [3]:
         thickness_PR_budget_below = 0.75  # 0.5  # NOTE: this value affects many of the plots and is highly subjective.
         amplitude = 7  # amplitude of profile in photoresist (not including thickness below and above)
 
-    elif wid in [3]:
+    elif wid in [3, 5]:
         # DESIGN
         design_lbls = ['erf_dia2mm_x01.25_32lyrs_7.5umDepth_Tol1e1_dose800mJ']
         target_lbls = ['erf_dia2mm_x01.25_32lyrs_7.5umDepth_Tol1e1_dose800mJ']
 
+        if wid in [3]:
+            # field exposure matrix
+            dose_lbls = ['a', 'b', 'c', 'd']
+            focus_lbls = [1, 2, 3]
+            fem_dxdy = [3.5e3, 3.5e3]
+
+            design_ids = [0]
+            design_spacing = 3.5e3
+            design_locs = [[0, n * design_spacing] for n in np.arange(-1, len(dose_lbls))]
+
+            # data processing
+            # perform_rolling_on = [[4, 'a1', 25], [4, 'c1', 25]]
+            perform_rolling_on = False
+            features_of_interest = ['a1', 'c1', 'd1', 'd2', 'd3']
+            target_radius = 1000  # microns
+            target_depth_profile = 150
+
+            # target feature
+            plot_width_rel_target_radius = 1.075  # plot radius = target_radius * plot_width_rel_target_radius
+
+            # data processing
+            evaluate_signal_processing = False  # True
+            lambda_peak_rel_height = lambda x: min([0.95 + x / 100, 0.9875])
+            r_standoff_measure = -25  # units: microns
+            z_standoff_measure = -0.125  # units: microns
+            z_standoff_design = 0  # if "-1", calculate the z_standoff from the measured exposure profile
+
+            thickness_PR = 8.125
+            thickness_PR_budget = 0.5
+            thickness_PR_budget_below = 0.75  # 0.5  # NOTE: this value affects many of the plots and is highly subjective.
+            amplitude = 7  # amplitude of profile in photoresist (not including thickness below and above)
+
+        elif wid in [5]:
+            # field exposure matrix
+            dose_lbls = ['a', 'b', 'c', 'd', 'e', 'f']
+            focus_lbls = [1, 2, 3]
+            fem_dxdy = [16e3, 9e3]
+
+            design_ids = [0]
+            design_spacing = fem_dxdy[1]
+            design_locs = [[0, n * design_spacing] for n in np.arange(-1, len(dose_lbls))]
+
+            # data processing
+            # perform_rolling_on = [[4, 'a1', 25], [4, 'c1', 25]]
+            perform_rolling_on = False
+            features_of_interest = ['d1', 'e1', 'd2', 'e2']
+            target_radius = 1000  # microns
+            target_depth_profile = 150
+
+            # target feature
+            plot_width_rel_target_radius = 1.075  # plot radius = target_radius * plot_width_rel_target_radius
+
+            # data processing
+            evaluate_signal_processing = False  # True
+            lambda_peak_rel_height = lambda x: min([0.95 + x / 100, 0.9875])
+            r_standoff_measure = -25  # units: microns
+            z_standoff_measure = -0.125  # units: microns
+            z_standoff_design = 0  # if "-1", calculate the z_standoff from the measured exposure profile
+
+            thickness_PR = 8.125
+            thickness_PR_budget = 0.5
+            thickness_PR_budget_below = 0.75  # 0.5  # NOTE: this value affects many of the plots and is highly subjective.
+            amplitude = 7  # amplitude of profile in photoresist (not including thickness below and above)
+
+    elif wid in [6]:
+        # DESIGN
+        design_lbls = ['erf_dia2mm_x01.25_40lyrs_7.5umDepth_Tol1e1_dose800mJ']
+        target_lbls = ['erf_dia2mm_x01.25_40lyrs_7.5umDepth_Tol1e1_dose800mJ']
+
         # field exposure matrix
         dose_lbls = ['a', 'b', 'c', 'd']
-        focus_lbls = [1, 2, 3]
-        fem_dxdy = [3.5e3, 3.5e3]
+        focus_lbls = [1]
+        fem_dxdy = [0, 7e3]
 
         design_ids = [0]
-        design_spacing = 3.5e3
+        design_spacing = fem_dxdy[1]
         design_locs = [[0, n * design_spacing] for n in np.arange(-1, len(dose_lbls))]
 
         # data processing
@@ -154,6 +225,273 @@ for wid in [3]:
         thickness_PR_budget_below = 0.75  # 0.5  # NOTE: this value affects many of the plots and is highly subjective.
         amplitude = 7  # amplitude of profile in photoresist (not including thickness below and above)
 
+    elif wid in [7]:
+        # DESIGN
+        design_lbls = ['erf_dia2.5mm_x01.25_40lyrs_7.5umDepth_Tol1e1_dose800mJ']
+        target_lbls = ['erf_dia2.5mm_x01.25_40lyrs_7.5umDepth_Tol1e1_dose800mJ']
+
+        # field exposure matrix
+        dose_lbls = ['a', 'b', 'c', 'd', 'e', 'f']
+        focus_lbls = [1, 2]
+        fem_dxdy = [22e3, 10e3]
+
+        design_ids = [0]
+        design_spacing = fem_dxdy[1]
+        design_locs = [[0, n * design_spacing] for n in np.arange(-1, len(dose_lbls))]
+
+        # data processing
+        # perform_rolling_on = [[4, 'a1', 25], [4, 'c1', 25]]
+        perform_rolling_on = False
+        features_of_interest = ['d1', 'e1', 'f1']
+        target_radius = 1250  # microns
+        target_depth_profile = 150
+
+        # target feature
+        plot_width_rel_target_radius = 1.075  # plot radius = target_radius * plot_width_rel_target_radius
+
+        # data processing
+        evaluate_signal_processing = False  # True
+        lambda_peak_rel_height = lambda x: min([0.95 + x / 100, 0.9875])
+        r_standoff_measure = -25  # units: microns
+        z_standoff_measure = -0.125  # units: microns
+        z_standoff_design = 0  # if "-1", calculate the z_standoff from the measured exposure profile
+
+        thickness_PR = 8.125
+        thickness_PR_budget = 0.5
+        thickness_PR_budget_below = 0.75  # 0.5  # NOTE: this value affects many of the plots and is highly subjective.
+        amplitude = 7  # amplitude of profile in photoresist (not including thickness below and above)
+
+    elif wid in [8, 9]:
+        # DESIGN
+        design_lbls = ['erf_dia1.75mm_x01p25_45lyrs_7.25umDepth_Tol1e-1_dose1000mJ']
+        target_lbls = ['erf_dia1.75mm_x01p25_45lyrs_7.25umDepth_Tol1e-1_dose1000mJ']
+
+        if wid in [8]:
+            # field exposure matrix
+            dose_lbls = ['a', 'b', 'c', 'd', 'e']
+            focus_lbls = [1, 2]
+            fem_dxdy = [16e3, 8e3]
+
+            design_ids = [0]
+            design_spacing = fem_dxdy[1]
+            design_locs = [[0, n * design_spacing] for n in np.arange(-1, len(dose_lbls))]
+
+            # data processing
+            perform_rolling_on = False
+            features_of_interest = ['c1', 'd1', 'e1']
+            target_radius = 875  # microns
+            target_depth_profile = 150
+
+            # target feature
+            plot_width_rel_target_radius = 1.075  # plot radius = target_radius * plot_width_rel_target_radius
+
+            # data processing
+            evaluate_signal_processing = False  # True
+            lambda_peak_rel_height = lambda x: min([0.95 + x / 100, 0.9875])
+            r_standoff_measure = -25  # units: microns
+            z_standoff_measure = -0.125  # units: microns
+            z_standoff_design = 0  # if "-1", calculate the z_standoff from the measured exposure profile
+
+            thickness_PR = 8.125
+            thickness_PR_budget = 0.5
+            thickness_PR_budget_below = 0.375  # 0.5  # NOTE: this value affects many of the plots and is highly subjective.
+            amplitude = 7.25  # amplitude of profile in photoresist (not including thickness below and above)
+
+        elif wid in [9]:
+            # field exposure matrix
+            dose_lbls = ['a', 'b', 'c']
+            focus_lbls = [1, 2]
+            fem_dxdy = [16e3, 10e3]
+
+            design_ids = [0]
+            design_spacing = fem_dxdy[1]
+            design_locs = [[0, n * design_spacing] for n in np.arange(-1, len(dose_lbls))]
+
+            # data processing
+            perform_rolling_on = False
+            features_of_interest = ['a1', 'b1', 'c1']
+            target_radius = 875  # microns
+            target_depth_profile = 150
+
+            # target feature
+            plot_width_rel_target_radius = 1.075  # plot radius = target_radius * plot_width_rel_target_radius
+
+            # data processing
+            evaluate_signal_processing = False  # True
+            lambda_peak_rel_height = lambda x: min([0.95 + x / 100, 0.9875])
+            r_standoff_measure = -25  # units: microns
+            z_standoff_measure = -0.125  # units: microns
+            z_standoff_design = 0  # if "-1", calculate the z_standoff from the measured exposure profile
+
+            thickness_PR = 8.125
+            thickness_PR_budget = 0.5
+            thickness_PR_budget_below = 0.375  # 0.5  # NOTE: this value affects many of the plots and is highly subjective.
+            amplitude = 7.25  # amplitude of profile in photoresist (not including thickness below and above)
+
+    elif wid in [10]:
+        # DESIGN
+        design_lbls = ['erfLR_dia1.75mm_x00_45lyrs_7.25umDepth_Tol1e-1_dose1000mJ']
+        target_lbls = ['erfLR_dia1.75mm_x00_45lyrs_7.25umDepth_Tol1e-1_dose1000mJ']
+
+        # field exposure matrix
+        dose_lbls = ['a', 'b', 'c', 'd', 'e', 'f']
+        focus_lbls = [1, 2, 3]
+        fem_dxdy = [16e3, 9e3]
+
+        design_ids = [0]
+        design_spacing = fem_dxdy[1]
+        design_locs = [[0, n * design_spacing] for n in np.arange(-1, len(dose_lbls))]
+
+        # data processing
+        # perform_rolling_on = [[4, 'a1', 25], [4, 'c1', 25]]
+        perform_rolling_on = False
+        features_of_interest = ['a1', 'b1', 'c1', 'd1', 'e1', 'f1']
+        target_radius = 875  # microns
+        target_depth_profile = 150
+
+        # target feature
+        plot_width_rel_target_radius = 1.075  # plot radius = target_radius * plot_width_rel_target_radius
+
+        # data processing
+        evaluate_signal_processing = False  # True
+        lambda_peak_rel_height = lambda x: min([0.95 + x / 100, 0.9875])
+        r_standoff_measure = -25  # units: microns
+        z_standoff_measure = -0.125  # units: microns
+        z_standoff_design = 0  # if "-1", calculate the z_standoff from the measured exposure profile
+
+        thickness_PR = 8.125
+        thickness_PR_budget = 0.375
+        thickness_PR_budget_below = 0.375  # 0.5  # NOTE: this value affects many of the plots and is highly subjective.
+        amplitude = 7.25  # amplitude of profile in photoresist (not including thickness below and above)
+
+        save_wafer_flow = True
+        eval_lithography = False
+        predict_etch_rates = False
+        grade_profile = False
+
+    elif wid in [11]:
+        # DESIGN
+        design_lbls = ['erf_stacked_LR_dia1.5mm_x00_40lyrs_7.75umDepth_Tol1e-1_dose1050mJ']
+        target_lbls = ['erf_stacked_LR_dia1.5mm_x00_40lyrs_7.75umDepth_Tol1e-1_dose1050mJ']
+
+        # field exposure matrix
+        dose_lbls = ['a', 'b', 'c', 'd', 'e', 'f']
+        focus_lbls = [1, 2, 3]
+        fem_dxdy = [16e3, 9e3]
+
+        design_ids = [0]
+        design_spacing = fem_dxdy[1]
+        design_locs = [[0, n * design_spacing] for n in np.arange(-1, len(dose_lbls))]
+
+        # data processing
+        # perform_rolling_on = [[4, 'a1', 25], [4, 'c1', 25]]
+        perform_rolling_on = False
+        features_of_interest = ['a1', 'b1', 'c1', 'd1', 'e1', 'f1']
+        target_radius = 750  # microns
+        target_depth_profile = 150
+
+        # target feature
+        plot_width_rel_target_radius = 1.075  # plot radius = target_radius * plot_width_rel_target_radius
+
+        # data processing
+        evaluate_signal_processing = False  # True
+        lambda_peak_rel_height = lambda x: min([0.95 + x / 100, 0.9875])
+        r_standoff_measure = -25  # units: microns
+        z_standoff_measure = -0.125  # units: microns
+        z_standoff_design = 0  # if "-1", calculate the z_standoff from the measured exposure profile
+
+        thickness_PR = 7.5
+        thickness_PR_budget = 0.25
+        thickness_PR_budget_below = 0.25  # 0.5  # NOTE: this value affects many of the plots and is highly subjective.
+        amplitude = 7.25  # amplitude of profile in photoresist (not including thickness below and above)
+
+        save_wafer_flow = True
+        eval_lithography = False
+        predict_etch_rates = False
+        grade_profile = False
+
+    elif wid in [12]:
+        # DESIGN
+        design_lbls = ['erf_stacked_LR_dia2.49mm_x00_50lyrs_6.58umDepth_Tol1e-1_dose1050mJ']
+        target_lbls = ['erf_stacked_LR_dia2.49mm_x00_50lyrs_6.58umDepth_Tol1e-1_dose1050mJ']
+
+        # field exposure matrix
+        dose_lbls = ['a', 'b', 'c', 'd', 'e', 'f']
+        focus_lbls = [1, 2, 3]
+        fem_dxdy = [16e3, 9e3]
+
+        design_ids = [0]
+        design_spacing = fem_dxdy[1]
+        design_locs = [[0, n * design_spacing] for n in np.arange(-1, len(dose_lbls))]
+
+        # data processing
+        # perform_rolling_on = [[4, 'a1', 25], [4, 'c1', 25]]
+        perform_rolling_on = False
+        features_of_interest = ['a1', 'b1', 'c1', 'd1', 'e1', 'f1']  # foi
+        target_radius = 1250  # 1500  # microns
+        target_depth_profile = 80
+
+        # target feature
+        plot_width_rel_target_radius = 1.075  # plot radius = target_radius * plot_width_rel_target_radius
+
+        # data processing
+        evaluate_signal_processing = False  # True
+        lambda_peak_rel_height = lambda x: min([0.95 + x / 100, 0.9875])
+        r_standoff_measure = -25  # units: microns
+        z_standoff_measure = -0.125  # units: microns
+        z_standoff_design = 0  # if "-1", calculate the z_standoff from the measured exposure profile
+
+        thickness_PR = 7.5
+        thickness_PR_budget = 0.25
+        thickness_PR_budget_below = 0.25  # 0.5  # NOTE: this value affects many of the plots and is highly subjective.
+        amplitude = 6.575  # amplitude of profile in photoresist (not including thickness below and above)
+
+        save_wafer_flow = True
+        eval_lithography = False
+        predict_etch_rates = False
+        grade_profile = False
+
+    elif wid in [13, 14]:
+        # DESIGN
+        design_lbls = ['erf_LR_dia2.75mm_x01.25_32lyrs_6.0umDepth_Tol1e-1_dose1040mJ']
+        target_lbls = ['erf_LR_dia2.75mm_x01.25_32lyrs_6.0umDepth_Tol1e-1_dose1040mJ']
+
+        # field exposure matrix
+        dose_lbls = ['a', 'b', 'c', 'd', 'e', 'f']
+        focus_lbls = [1, 2, 3]
+        fem_dxdy = [16e3, 9e3]
+
+        design_ids = [0]
+        design_spacing = fem_dxdy[1]
+        design_locs = [[0, n * design_spacing] for n in np.arange(-1, len(dose_lbls))]
+
+        # data processing
+        # perform_rolling_on = [[4, 'a1', 25], [4, 'c1', 25]]
+        perform_rolling_on = False
+        features_of_interest = ['a1', 'b1', 'c1', 'd1', 'e1', 'f1', 'd2', 'c2']  # foi
+        target_radius = 1650  # microns (NOTE: this is actually a very important parameter, because data gets clipped)
+        target_depth_profile = 250
+
+        # target feature
+        plot_width_rel_target_radius = 1.075  # plot radius = target_radius * plot_width_rel_target_radius
+
+        # data processing
+        evaluate_signal_processing = False  # True
+        lambda_peak_rel_height = lambda x: min([0.95 + x / 100, 0.9875])
+        r_standoff_measure = -25  # units: microns
+        z_standoff_measure = -0.125  # units: microns
+        z_standoff_design = 0  # if "-1", calculate the z_standoff from the measured exposure profile
+
+        thickness_PR = 7.2
+        thickness_PR_budget = 0.25  # minimum allowable photoresist thickness before stopping etch
+        thickness_PR_budget_below = 0.25  # 0.5  # NOTE: this value affects many of the plots and is highly subjective.
+        amplitude = 6.0  # amplitude of profile in photoresist (not including thickness below and above)
+
+        save_wafer_flow = True
+        eval_lithography = False
+        predict_etch_rates = False
+        grade_profile = False
+
     else:
         raise ValueError()
 
@@ -167,7 +505,14 @@ for wid in [3]:
     # results
     save_type = '.png'
     step_develop = 3
-    save_all_results = True
+    save_wafer_flow = True
+
+    plot_feature_evolution = False
+    eval_lithography = False
+    predict_etch_rates = False
+
+    save_deformation_characteristics = True
+    membrane_thickness = 20
 
     # ------------------------------------------------------------------------------------------------------------------
 
@@ -178,39 +523,42 @@ for wid in [3]:
                               target_radius=target_radius,
                               plot_width_rel_target_radius=plot_width_rel_target_radius,
                               peak_rel_height=lambda_peak_rel_height,
-                              save_all_results=save_all_results,
+                              save_all_results=save_wafer_flow,
                               perform_rolling_on=perform_rolling_on,
                               evaluate_signal_processing=evaluate_signal_processing,
                               zr_standoff=[z_standoff_measure, r_standoff_measure],
                               )
 
-    # 2. relate mask design (intensity profile) to actual outcome (surface profile)
-    wfr.characterize_exposure_dose_depth_relationship(plot_figs=save_all_results,
-                                                      save_type=save_type,
-                                                      )
+    # plot feature evolution
+    if plot_feature_evolution:
+        wfr.plot_feature_evolution(px='r', py='z', save_fig=plot_feature_evolution)
 
-    # 3. merge features
-    wfr.merge_exposure_doses_to_process_depths(export=save_all_results)
-    wfr.plot_all_exposure_dose_to_depth(step=step_develop)
-    wfr.compare_exposure_functions()
+    # NOTE: THIS IS WRONG! The mapping function incorrectly maps depth onto dose.
+    if eval_lithography:
+        # 2. relate mask design (intensity profile) to actual outcome (surface profile)
+        wfr.characterize_exposure_dose_depth_relationship(plot_figs=eval_lithography,
+                                                          save_type=save_type,
+                                                          )
 
-    # 4. use intensity+surface profiles to generate LUT, redraw intensity profile using new LUT
-    wfr.correct_grayscale_design_profile(amplitude=amplitude,  # None --> auto-calculate based on etch selectivity
-                                         target_depth=target_depth_profile,
-                                         thickness_PR=thickness_PR,
-                                         thickness_PR_budget_below=thickness_PR_budget_below,
-                                         plot_figs=save_all_results,
-                                         save_type=save_type,
-                                         )
+        # 3. merge features
+        wfr.merge_exposure_doses_to_process_depths(export=eval_lithography)
+        wfr.plot_all_exposure_dose_to_depth(step=step_develop)
+        wfr.compare_exposure_functions()
 
-    # plots
-    if save_all_results:
-        wfr.plot_feature_evolution(px='r', py='z', save_fig=save_all_results)
+        # 4. use intensity+surface profiles to generate LUT, redraw intensity profile using new LUT
+        wfr.correct_grayscale_design_profile(amplitude=amplitude,  # None --> auto-calculate based on etch selectivity
+                                             target_depth=None,  # None --> uses 'amplitude': depth of PR feature
+                                             thickness_PR=thickness_PR,
+                                             thickness_PR_budget_below=thickness_PR_budget_below,
+                                             plot_figs=eval_lithography,
+                                             save_type=save_type,
+                                             )
 
         # plot exposure profile
         for foi in features_of_interest:
-            gpf = wfr.features[foi]
-            plotting.plot_exposure_profile(gcf=gpf, path_save=join(wfr.path_results, 'figs'), save_type=save_type)
+            if foi in wfr.features.keys():
+                gpf = wfr.features[foi]
+                plotting.plot_exposure_profile(gcf=gpf, path_save=join(wfr.path_results, 'figs'), save_type=save_type)
 
         # plot feature profile overlaid with exposure profile
         step = max(wfr.list_steps)
@@ -222,28 +570,49 @@ for wid in [3]:
                                                                 save_type=save_type,
                                                                 )
 
+    # predict etch time to achieve specified profile depth
+    if predict_etch_rates:
+        wfr.backout_process_to_achieve_target(target_radius=target_radius,
+                                              target_depth=target_depth_profile,
+                                              thickness_PR=thickness_PR,
+                                              thickness_PR_budget=thickness_PR_budget,
+                                              save_fig=predict_etch_rates)
+
+        # compare target to features
+        """ below function generates: est-process-and-profile...png """
+        etch_recipe_PR = 'smOOth.V1'
+        etch_recipe_Si = 'sweep'  # 'sweep', None, or a specific recipe ['SF6+O2.V1', 'SF6+O2.V2', 'SF6+O2.S20', 'SF6+O2.S25']#, 'SF6+O2.S30', 'SF6+O2.S40', 'SF6+O2.S50']
+        wfr.compare_target_to_feature_evolution(px='r', py='z',
+                                                etch_recipe_PR=etch_recipe_PR,
+                                                etch_recipe_Si=etch_recipe_Si,
+                                                target_depth=target_depth_profile,
+                                                thickness_PR_budget=thickness_PR_budget,
+                                                save_fig=predict_etch_rates,
+                                                )
+
     # ---
 
+    # ---
+
+    # Functions that require 2D surface profiles from orthogonal directions (i.e., along both x and y)
+
     # grade target accuracy
-    # final_profile_depth = wfr.processes[max(wfr.list_steps)].features['a1'].peak_properties['peak_heights']
-    # TODO: grade profile accuracy against: (1) target depth, and (ii) actual depth (i.e., depth-normalized profile).
-    # wfr.grade_profile_accuracy(step=max(wfr.list_steps), target_radius=target_radius, target_depth=target_depth_profile)
+    grade_profile = False
+    if grade_profile:
+        # final_profile_depth = wfr.processes[max(wfr.list_steps)].features['a1'].peak_properties['peak_heights']
+        # TODO: grade profile accuracy against: (1) target depth, and (ii) actual depth (i.e., depth-normalized profile).
+        wfr.grade_profile_accuracy(step=max(wfr.list_steps), target_radius=target_radius, target_depth=target_depth_profile)
 
-    # wfr.plot_profile_3d(step=max(wfr.list_steps))
+    #wfr.plot_profile_3d(step=max(wfr.list_steps))
 
-    wfr.backout_process_to_achieve_target(target_radius=target_radius,
-                                          target_depth=target_depth_profile,
-                                          thickness_PR=thickness_PR,
-                                          thickness_PR_budget=thickness_PR_budget,
-                                          save_fig=save_all_results)
+    # ---
 
-    # compare target to features
-    """ below function generates: est-process-and-profile...png """
-    etch_recipe_PR = 'smOOth.V2'
-    etch_recipe_Si = 'sweep'  # 'sweep', None, or a specific recipe
-    wfr.compare_target_to_feature_evolution(px='r', py='z',
-                                            etch_recipe_PR=etch_recipe_PR, etch_recipe_Si=etch_recipe_Si,
-                                            save_fig=save_all_results,
-                                            )
+    # ---
+
+    # Specialty functions
+
+    # export deformation characteristics given membrane thickness
+    if save_deformation_characteristics:
+        wfr.export_membrane_deformation_characteristics(membrane_thickness=membrane_thickness)
 
     print("test_flow.py completed without errors.")

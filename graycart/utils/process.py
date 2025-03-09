@@ -42,13 +42,13 @@ def backout_process_from_target(df, px, py, pys, thickness_PR, thickness_PR_budg
     # ---
 
     # etch rates
-    etch_rate_SF6_O2_Si = -1.875 / 60  # um/min --> negative etch rate b/c running a 'reverse' etch.
-    etch_rate_SF6_O2_PR = -0.222 / 60  # um/min
+    etch_rate_SF6_O2_Si = -4 / 60  # um/min --> negative etch rate b/c running a 'reverse' etch.
+    etch_rate_SF6_O2_PR = -0.2 / 60  # um/min
 
     # ---
 
     # initialize
-    etch_recipe = 'SF6+O2.V6'
+    etch_recipe = 'SF6+O2.S20'
     etch_rate_Si = etch_rate_SF6_O2_Si
     etch_rate_PR = etch_rate_SF6_O2_PR
 
@@ -150,7 +150,7 @@ def backout_process_from_target(df, px, py, pys, thickness_PR, thickness_PR_budg
 
 
 def estimate_process_to_achieve_target(df, px, py, p_materials, recipe_smOOth, recipe_SF6_O2,
-                                       target_depth=50, thickness_PR_budget=0.5, r_target=25):
+                                       target_depth, thickness_PR_budget=0.5, r_target=25):
     """
     est_process_flow = process.estimate_process_to_achieve_target(df, px, py, target_depth=-50, r_target=25)
 
@@ -161,8 +161,8 @@ def estimate_process_to_achieve_target(df, px, py, p_materials, recipe_smOOth, r
     :param px:
     :param py:
     :param target_depth:
-    :param thickness_PR_budget:
-    :param r_target:
+    :param thickness_PR_budget: thickness of PR that triggers the etch to stop
+    :param r_target: center radial distance to average over to estimate the max depth of profile
     :return:
     """
 

@@ -33,8 +33,8 @@ class GraycartMaterial(object):
 
 class SiliconMaterial(GraycartMaterial):
     def __init__(self, name, properties, thickness=0, etch_rates=None, dep_rates=None):
-        if etch_rates is None:
-            etch_rates = {
+        """
+        old_etch_rates = {          NOTE: the DSEiii chamber temperature has been changed, so rates likely different
                 'smOOth.V2': 0.0,
                 'smOOth.V1': 0.0,
                 'SF6+O2.V5': 2.25,  # um/min
@@ -47,13 +47,25 @@ class SiliconMaterial(GraycartMaterial):
                 'SF6+O2.V8': 2.90,  # um/min
                 'SF6': 5,  # um/min
             }
+        """
+        if etch_rates is None:
+            etch_rates = {
+                'smOOth.V1': 0.0,
+                'SF6+O2.V1': 2.0,  # (um/min); DAMIEN'S RECIPE: SF6/O2 flow: ?/?
+                'SF6+O2.V2': 3.2,  # (um/min); RECIPE: SF6/O2 flow: 80/50
+                'SF6+O2.V4': 3.55,  # (um/min); RECIPE: SF6/O2 flow: 90/50
+                'SF6+O2.V6': 4.0,  # (um/min); RECIPE: SF6/O2 flow: 110/50
+                'SF6+O2.V8': 4.27,  # (um/min); RECIPE: SF6/O2 flow: 130/50
+                'SF6+O2.V48': 5.2,  # (um/min); RECIPE: SF6/O2 flow: 130/40
+                'SF6+O2.S25': 2.5,  # SELECTIVITY 25
+            }
         GraycartMaterial.__init__(self, name, properties, thickness, etch_rates, dep_rates)
 
 
 class PhotoresistMaterial(GraycartMaterial):
     def __init__(self, name, properties, thickness=0, etch_rates=None, dep_rates=None):
-        if etch_rates is None:
-            etch_rates = {
+        """
+        old_etch_rates = {          NOTE: the DSEiii chamber temperature has been changed, so rates likely different
                 'smOOth.V2': 0.550,  # um/min (n = 5)
                 'smOOth.V1': 0.500,  # um/min
                 'SF6+O2.V5': 0.25,  # um/min
@@ -66,19 +78,32 @@ class PhotoresistMaterial(GraycartMaterial):
                 'SF6+O2.V8': 0.05,  # um/min
                 'SF6': 0.01,  # um/min
             }
+        """
+        if etch_rates is None:
+            etch_rates = {
+                'smOOth.V1': 0.750,  # um/min (n = 1)
+                'SF6+O2.V1': 0.24,  # (um/min); DAMIEN'S RECIPE: SF6/O2 flow: ?/?
+                'SF6+O2.V2': 0.27,  # (um/min); RECIPE: SF6/O2 flow: 80/50
+                'SF6+O2.V4': 0.225,  # (um/min); RECIPE: SF6/O2 flow: 90/50
+                'SF6+O2.V6': 0.175,  # (um/min); RECIPE: SF6/O2 flow: 110/50
+                'SF6+O2.V8': 0.145,  # (um/min); RECIPE: SF6/O2 flow: 130/50        (need more data to verify)
+                'SF6+O2.V48': 0.16,  # (um/min); RECIPE: SF6/O2 flow: 130/40       (need more data; don't trust this)
+                'SF6+O2.S25': 0.1,  # SELECTIVITY 25
+            }
         if dep_rates is None:
             """ 
             NOTE: 'dep_rates' refers to the spinner recipe, as outlined below:
             
             Recipe  Spin Speed (rpm)    Spin Time (s)       Thickness (um)
             4       2500                30                  8.125
-            5       3000                30                  7.45
+            5       3000                30                  7.45                (recently, 12/1/24: ~7.2 um)
             6       3500                30                  6.95
             7       4000                30                  6.45
             """
             dep_rates = {
                 4: 8.125,
                 5: 7.45,
+                5.5: 7.2,  # This is a special case, when recipe 5 was used but actual thickness is less than
                 6: 6.95,
                 7: 6.45,
             }
